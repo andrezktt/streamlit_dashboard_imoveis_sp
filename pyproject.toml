@@ -3,4 +3,8 @@ name = "dashboard-imoveis-sp"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pandas>=2.3.2",
+    "plotly>=6.3.0",
+    "streamlit>=1.49.1",
+]
