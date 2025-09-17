@@ -125,3 +125,19 @@ with col_map:
         st.plotly_chart(fig_map, use_container_width=True)
     else:
         st.write("Mapa Indisponível. Selecione filtros que retornem algum imóvel.")
+
+with col_chart:
+    st.subheader("Top 10 Bairros Mais Caros por m²")
+    if not df_filtered.empty and districts:
+        df_districts = df_filtered.groupby("District")["Price_m2"].mean().sort_values(ascending=False).reset_index().head(10)
+        fig_bar = px.bar(
+            data_frame=df_districts,
+            x="District",
+            y="Price_m2",
+            labels={"Districts": "Bairros", "Price_m2": "Preço por m² (R$)"}
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
+    else:
+        st.write("Selecione pelo menos um bairro para ver o gráfico.")
+
+st.markdown("---")
