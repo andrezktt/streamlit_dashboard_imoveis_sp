@@ -85,7 +85,7 @@ df_filtered = df_selection[
 if districts:
     df_filtered = df_filtered[df_filtered["District"].isin(districts)]
 
-st.header(f"Resultados de imóveis para {"aluguel" if negotiation_type == 'rent' else "compra"}: {df_filtered.shape[0]} encontrados")
+st.header(f"Resultados de imóveis para {"Aluguel" if negotiation_type == 'rent' else "Compra"}: {df_filtered.shape[0]} encontrados")
 st.subheader("Estatísticas Gerais")
 col_01, col_02, col_03, col_04 = st.columns(4)
 if not df_filtered.empty:
@@ -101,7 +101,7 @@ st.markdown("---")
 
 st.header("Análise Geográfica e de Preços")
 
-col_map, col_chart = st.columns(2)
+col_map, col_expensive = st.columns(2)
 
 with col_map:
     st.subheader("Mapa de Densidade de Preços")
@@ -126,7 +126,7 @@ with col_map:
     else:
         st.write("Mapa Indisponível. Selecione filtros que retornem algum imóvel.")
 
-with col_chart:
+with col_expensive:
     st.subheader("Top 10 Bairros Mais Caros por m²")
     if not df_filtered.empty and districts:
         df_districts = df_filtered.groupby("District")["Price_m2"].mean().sort_values(ascending=False).reset_index().head(10)
@@ -141,3 +141,26 @@ with col_chart:
         st.write("Selecione pelo menos um bairro para ver o gráfico.")
 
 st.markdown("---")
+
+st.header("Análise de Investimento: Comprar vs. Alugar")
+
+df_selling = df[df['Negotiation Type'] == 'sale'].groupby('District')['Price'].mean()
+
+df_renting = df[df['Negotiation Type'] == 'rent'].groupby('District')['Price'].mean()
+
+df_ratio = pd.concat([df_selling, df_renting], axis=1)
+df_ratio.columns = ['Selling_Price', 'Renting_Price']
+df_ratio.dropna(inplace=True) # Manter apenas bairros com dados de ambos
+
+df_ratio['Ratio'] = df_ratio['Selling_Price'] / (df_ratio['Renting_Price'] * 12)
+df_ratio = df_ratio.sort_values('Ratio', ascending=False).reset_index()
+
+fig_ratio = px.bar(
+    df_ratio.head(25),
+    x='District',
+    y='Ratio',
+    title='Índice Preço/Aluguel por Bairro (Quanto maior, mais caro é comprar vs. alugar)',
+    labels={'District': 'Bairro', 'Ratio': 'Índice (Preço Venda / Aluguel Anual)'}
+)
+st.plotly_chart(fig_ratio, use_container_width=True)
+st.info("O Índice Preço/Aluguel é um indicador para avaliar o custo de propriedade em relação ao aluguel. Valores mais altos indicam que pode ser financeiramente mais vantajoso alugar, enquanto valores mais baixos podem indicar uma boa oportunidade de compra.")
