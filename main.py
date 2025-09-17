@@ -96,3 +96,32 @@ if not df_filtered.empty:
     col_04.metric(label="Preço/m² Médio", value=f"R$ {df_filtered['Price_m2'].mean():,.2f}")
 else:
     st.warning("Nenhum imóvel encontrado com os filtros selecionados.")
+
+st.markdown("---")
+
+st.header("Análise Geográfica e de Preços")
+
+col_map, col_chart = st.columns(2)
+
+with col_map:
+    st.subheader("Mapa de Densidade de Preços")
+    if not df_filtered.empty:
+        centro_sp = {'lat': -23.5505, "lon": -46.6333}
+        fig_map = px.scatter_mapbox(
+            data_frame=df_filtered,
+            lat="Latitude",
+            lon="Longitude",
+            color="Price_m2",
+            size="Size",
+            color_continuous_scale=px.colors.cyclical.IceFire,
+            size_max=15,
+            center=centro_sp,
+            zoom=11,
+            mapbox_style="carto-positron",
+            hover_name="District",
+            hover_data={"Price": ":,.2f", "Size": True}
+        )
+        fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        st.plotly_chart(fig_map, use_container_width=True)
+    else:
+        st.write("Mapa Indisponível. Selecione filtros que retornem algum imóvel.")
