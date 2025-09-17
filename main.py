@@ -73,3 +73,26 @@ size_range = st.sidebar.slider(
     max_value=int(df_selection["Size"].max()),
     value=(int(df_selection["Size"].min()), int(df_selection["Size"].max()))
 )
+
+df_filtered = df_selection[
+    (df_selection['Property Type'] == property_type) &
+    (df_selection['Price'] >= price_range[0]) &
+    (df_selection['Price'] <= price_range[1]) &
+    (df_selection['Size'] >= size_range[0]) &
+    (df_selection['Size'] <= size_range[1])
+]
+
+if districts:
+    df_filtered = df_filtered[df_filtered["District"].isin(districts)]
+
+st.header(f"Resultados de imóveis para {"aluguel" if negotiation_type == 'rent' else "compra"}: {df_filtered.shape[0]} encontrados")
+st.subheader("Estatísticas Gerais")
+col_01, col_02, col_03, col_04 = st.columns(4)
+if not df_filtered.empty:
+    metric_price_label = "Preço Médio" if negotiation_type == "sale" else "Aluguel Médio"
+    col_01.metric(label=metric_price_label, value=f"R$ {df_filtered['Price'].mean():,.2f}")
+    col_02.metric(label="Condomínio Médio", value=f"R$ {df_filtered['Condo'].mean():,.2f}")
+    col_03.metric(label="Área Média", value=f"{df_filtered['Size'].mean():.2f} m²")
+    col_04.metric(label="Preço/m² Médio", value=f"R$ {df_filtered['Price_m2'].mean():,.2f}")
+else:
+    st.warning("Nenhum imóvel encontrado com os filtros selecionados.")
