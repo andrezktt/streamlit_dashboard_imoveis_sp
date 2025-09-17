@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from streamlit import sidebar
 
 # Configurando a Página Streamlit
 st.set_page_config(layout="wide")
@@ -59,7 +60,10 @@ districts = st.sidebar.multiselect(
     default=df_selection["District"].value_counts().index[:10]
 )
 
-price_label = "Preço (R$)" if negotiation_type == "Sale" else "Aluguel (R$)"
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Preços e Área**")
+
+price_label = "Preço (R$)" if negotiation_type == "sale" else "Aluguel (R$)"
 price_range = st.sidebar.slider(
     label=price_label,
     min_value=int(df_selection["Price"].min()),
@@ -74,16 +78,51 @@ size_range = st.sidebar.slider(
     value=(int(df_selection["Size"].min()), int(df_selection["Size"].max()))
 )
 
+sidebar.markdown("---")
+st.sidebar.markdown("**Cômodos e Vagas**")
+rooms_range = st.sidebar.slider(
+    label="Número de Quartos",
+    min_value=0,
+    max_value=int(df_selection["Rooms"].max()),
+    value=(0, int(df_selection["Rooms"].max()))
+)
+parking_range = st.sidebar.slider(
+    label="Vagas na Garagem",
+    min_value=0,
+    max_value=int(df_selection["Parking"].max()),
+    value=(0, int(df_selection["Parking"].max()))
+)
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("**Características Adicionais**")
+use_elevator = st.sidebar.checkbox("Com Elevador", value=False) # Inicia desmarcado para busca mais ampla
+is_furnished = st.sidebar.checkbox("Mobiliado")
+has_pool = st.sidebar.checkbox("Com Piscina")
+is_new = st.sidebar.checkbox("Imóvel Novo")
+
 df_filtered = df_selection[
     (df_selection['Property Type'] == property_type) &
     (df_selection['Price'] >= price_range[0]) &
     (df_selection['Price'] <= price_range[1]) &
     (df_selection['Size'] >= size_range[0]) &
-    (df_selection['Size'] <= size_range[1])
+    (df_selection['Size'] <= size_range[1]) &
+    (df_selection['Rooms'] >= rooms_range[0]) &
+    (df_selection['Rooms'] <= rooms_range[1]) &
+    (df_selection['Parking'] >= parking_range[0]) &
+    (df_selection['Parking'] <= parking_range[1])
 ]
 
 if districts:
     df_filtered = df_filtered[df_filtered["District"].isin(districts)]
+
+if use_elevator:
+    df_filtered = df_filtered[df_filtered['Elevator'] == 1]
+if is_furnished:
+    df_filtered = df_filtered[df_filtered['Furnished'] == 1]
+if has_pool:
+    df_filtered = df_filtered[df_filtered['Swimming Pool'] == 1]
+if is_new:
+    df_filtered = df_filtered[df_filtered['New'] == 1]
 
 st.header(f"Resultados de imóveis para {"Aluguel" if negotiation_type == 'rent' else "Compra"}: {df_filtered.shape[0]} encontrados")
 st.subheader("Estatísticas Gerais")
@@ -150,7 +189,7 @@ df_renting = df[df['Negotiation Type'] == 'rent'].groupby('District')['Price'].m
 
 df_ratio = pd.concat([df_selling, df_renting], axis=1)
 df_ratio.columns = ['Selling_Price', 'Renting_Price']
-df_ratio.dropna(inplace=True) # Manter apenas bairros com dados de ambos
+df_ratio.dropna(inplace=True)
 
 df_ratio['Ratio'] = df_ratio['Selling_Price'] / (df_ratio['Renting_Price'] * 12)
 df_ratio = df_ratio.sort_values('Ratio', ascending=False).reset_index()
