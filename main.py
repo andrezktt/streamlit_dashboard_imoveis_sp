@@ -146,7 +146,7 @@ with col_map:
     st.subheader("Mapa de Densidade de Preços")
     if not df_filtered.empty:
         centro_sp = {'lat': -23.5505, "lon": -46.6333}
-        fig_map = px.scatter_mapbox(
+        fig_map = px.scatter_map(
             data_frame=df_filtered,
             lat="Latitude",
             lon="Longitude",
@@ -155,11 +155,11 @@ with col_map:
             color_continuous_scale=px.colors.cyclical.IceFire,
             size_max=15,
             center=centro_sp,
-            zoom=11,
-            mapbox_style="carto-positron",
+            zoom=10,
             hover_name="District",
             hover_data={"Price": ":,.2f", "Size": True}
         )
+        fig_map.update_layout(map_style="carto-positron")
         fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
         st.plotly_chart(fig_map, use_container_width=True)
     else:
@@ -203,3 +203,21 @@ fig_ratio = px.bar(
 )
 st.plotly_chart(fig_ratio, use_container_width=True)
 st.info("O Índice Preço/Aluguel é um indicador para avaliar o custo de propriedade em relação ao aluguel. Valores mais altos indicam que pode ser financeiramente mais vantajoso alugar, enquanto valores mais baixos podem indicar uma boa oportunidade de compra.")
+
+st.markdown("---")
+
+st.header("Análises Detalhadas")
+col_sct, col_cond = st.columns(2)
+
+with col_sct:
+    st.subheader("Relação entre Área e Preço")
+    if not df_filtered.empty:
+        fig_scatter = px.scatter(
+            data_frame=df_filtered,
+            x="Size",
+            y="Price",
+            color="District",
+            title="Área vs Preço",
+            labels={"Size": "Área (m²)", "Price": "Preço (R$)"}
+        )
+        st.plotly_chart(fig_scatter, use_container_width=True)
