@@ -241,3 +241,57 @@ with col_cond:
         st.plotly_chart(fig_condo_bar, use_container_width=True)
     else:
         st.warning("Selecione pelo menos um bairro para gerar este gráfico.")
+
+st.markdown("---")
+
+st.header("🔎 Análise Detalhada de um Bairro Específico")
+district_list = sorted(df_selection["District"].unique())
+selected_district = st.selectbox(
+    label="Selecione um bairro para ver os detalhes",
+    options=district_list
+)
+
+df_selected_district = df_selection[df_selection["District"] == selected_district]
+
+if not df_selected_district.empty:
+    st.subheader(f"Estatísticas de '{selected_district}'")
+    price_label = "Preço Médio" if negotiation_type == "sale" else "Aluguel Médio"
+
+    avg_price = df_selected_district["Price"].mean()
+    avg_condo = df_selected_district["Condo"].mean()
+    avg_size = df_selected_district["Size"].mean()
+    avg_rooms = df_selected_district["Rooms"].mean()
+    avg_parking = df_selected_district["Parking"].mean()
+
+    col_01, col_02, col_03, col_04, col_05 = st.columns(5)
+    col_01.metric(label=price_label, value=f"R$ {avg_price:,.2f}")
+    col_02.metric(label="Condomínio Médio", value=f"R$ {avg_condo:,.2f}")
+    col_03.metric(label="Área Média", value=f"{avg_size:.2f} m²")
+    col_04.metric(label="Nº Médio de Quartos", value=f"{avg_rooms:.0f}")
+    col_05.metric(label="Nº Médio de Vagas", value=f"{avg_parking:.0f}")
+
+    st.markdown("---")
+
+    col_hist1, col_hist2 = st.columns(2)
+
+    with col_hist1:
+        # Histograma de Preços/Aluguéis
+        fig_hist_price_bairro = px.histogram(
+            df_selected_district,
+            x='Price',
+            nbins=25,
+            title=f"Distribuição de Preços ({negotiation_type})"
+        )
+        st.plotly_chart(fig_hist_price_bairro, use_container_width=True)
+
+    with col_hist2:
+        # Histograma de Área (m²)
+        fig_hist_size_bairro = px.histogram(
+            df_selected_district,
+            x='Size',
+            nbins=25,
+            title="Distribuição de Área (m²)",
+        )
+        st.plotly_chart(fig_hist_size_bairro, use_container_width=True)
+else:
+    st.warning("Não há dados para o bairro selecionado com os filtros atuais.")
