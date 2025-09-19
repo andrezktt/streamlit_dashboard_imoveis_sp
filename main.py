@@ -168,16 +168,18 @@ with col_map:
 with col_expensive:
     st.subheader("Top 10 Bairros Mais Caros por m²")
     if not df_filtered.empty and districts:
-        df_districts = df_filtered.groupby("District")["Price_m2"].mean().sort_values(ascending=False).reset_index().head(10)
+        df_districts = df_filtered.groupby("District")["Price_m2"].mean().sort_values(ascending=False).reset_index()
         fig_bar = px.bar(
-            data_frame=df_districts,
+            data_frame=df_districts.head(10),
             x="District",
             y="Price_m2",
-            labels={"Districts": "Bairros", "Price_m2": "Preço por m² (R$)"}
+            labels={"Districts": "Bairros", "Price_m2": "Preço por m² (R$)"},
+            color="Price_m2",
+            color_continuous_scale="Blues"
         )
         st.plotly_chart(fig_bar, use_container_width=True)
     else:
-        st.write("Selecione pelo menos um bairro para ver o gráfico.")
+        st.warning("Selecione pelo menos um bairro para ver o gráfico.")
 
 st.markdown("---")
 
@@ -211,7 +213,7 @@ col_sct, col_cond = st.columns(2)
 
 with col_sct:
     st.subheader("Relação entre Área e Preço")
-    if not df_filtered.empty:
+    if not df_filtered.empty and districts:
         fig_scatter = px.scatter(
             data_frame=df_filtered,
             x="Size",
@@ -221,3 +223,21 @@ with col_sct:
             labels={"Size": "Área (m²)", "Price": "Preço (R$)"}
         )
         st.plotly_chart(fig_scatter, use_container_width=True)
+    else:
+        st.warning("Selecione pelo menos um bairro para gerar este gráfico.")
+
+with col_cond:
+    st.subheader("Valor Médio do Condomínio por Bairro")
+    if not df_filtered.empty and districts:
+        df_condo_district = df_filtered.groupby("District")["Condo"].mean().sort_values(ascending=False).reset_index()
+        fig_condo_bar = px.bar(
+            data_frame=df_condo_district.head(10),
+            x="District",
+            y="Condo",
+            title="Top 10 Bairros por Valor Médio de Condomínio",
+            color="Condo",
+            color_continuous_scale="Blues"
+        )
+        st.plotly_chart(fig_condo_bar, use_container_width=True)
+    else:
+        st.warning("Selecione pelo menos um bairro para gerar este gráfico.")
