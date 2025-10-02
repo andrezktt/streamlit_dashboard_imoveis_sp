@@ -15,7 +15,7 @@ O objetivo é fornecer uma ferramenta intuitiva para que potenciais compradores,
 
 <br>
 
-> **Nota:** Você pode acessar a aplicação online [**AQUI**]().
+> **Nota:** Você pode acessar a aplicação online [**AQUI**](https://dashboard-imoveis-sp.streamlit.app/).
 
 <br>
 
